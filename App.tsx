@@ -163,8 +163,8 @@ const App: React.FC = () => {
       />
 
       <main className="flex-1 flex flex-col relative min-w-0">
-        <header className="h-20 border-b border-stone-200 flex items-center justify-between px-8 bg-white/90 backdrop-blur-xl sticky top-0 z-10">
-          <div className="flex-1 flex items-center gap-3">
+        <header className="border-b border-stone-200 flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-8 py-3 sm:py-0 bg-white/90 backdrop-blur-xl sticky top-0 z-10">
+          <div className="flex-1 flex items-center gap-3 w-full">
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden w-9 h-9 rounded-full bg-stone-100 text-stone-600 flex items-center justify-center hover:bg-stone-200 transition-colors"
@@ -172,7 +172,7 @@ const App: React.FC = () => {
             >
               <i className="fa-solid fa-bars"></i>
             </button>
-            <form onSubmit={handleSearch} className="relative w-full max-w-md group">
+            <form onSubmit={handleSearch} className="relative w-full sm:max-w-md group">
               <input 
                 type="text"
                 placeholder="Busca Inteligente (ex: 'onde fala de amor?')"
@@ -189,14 +189,14 @@ const App: React.FC = () => {
             </form>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto mt-3 sm:mt-0">
             <button 
               onClick={handleSummarize}
               disabled={isLoading || isSummaryLoading}
-              className="flex items-center gap-2 bg-stone-900 text-stone-50 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-stone-800 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto bg-stone-900 text-stone-50 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-stone-800 transition-all active:scale-95 disabled:opacity-50"
             >
               <i className="fa-solid fa-wand-magic-sparkles"></i>
-              Resumir com IA
+              Resuma este Capitulo
             </button>
           </div>
         </header>
