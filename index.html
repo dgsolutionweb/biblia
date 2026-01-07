@@ -14,11 +14,40 @@
     <style>
         :root {
           --paper-bg: #faf9f6;
+          --text-primary: #1c1917;
+          --text-secondary: #57534e;
+          --text-muted: #a8a29e;
+          --border-color: #e7e5e4;
+          --card-bg: #ffffff;
+          --sidebar-bg: #ffffff;
+          --header-bg: rgba(255, 255, 255, 0.9);
+          --input-bg: #f5f5f4;
+          --amber-primary: #d97706;
+          --amber-light: #fef3c7;
+          --amber-accent: #92400e;
         }
+        
+        .dark {
+          --paper-bg: #0c0a09;
+          --text-primary: #fafaf9;
+          --text-secondary: #a8a29e;
+          --text-muted: #78716c;
+          --border-color: #292524;
+          --card-bg: #1c1917;
+          --sidebar-bg: #1c1917;
+          --header-bg: rgba(28, 25, 23, 0.9);
+          --input-bg: #292524;
+          --amber-primary: #f59e0b;
+          --amber-light: #451a03;
+          --amber-accent: #fbbf24;
+        }
+        
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--paper-bg);
+            color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .bible-text p {
             font-family: 'Lora', serif;
@@ -30,11 +59,11 @@
             background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e5e5e5;
+            background: var(--border-color);
             border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #d4d4d4;
+            background: var(--text-muted);
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -42,6 +71,11 @@
         }
         .animate-fade-in {
           animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        /* Dark mode transition for all elements */
+        *, *::before, *::after {
+          transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
     </style>
 <script type="importmap">
