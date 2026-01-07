@@ -276,66 +276,6 @@ const App: React.FC = () => {
               >
                 <i className="fa-solid fa-list-ol text-sm"></i>
               </button>
-
-              {/* Verse Range Dropdown */}
-              {showVerseSelector && (
-                <div
-                  className="absolute right-0 top-12 w-72 p-4 rounded-2xl shadow-2xl border z-50"
-                  style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
-                >
-                  <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>
-                    <i className="fa-solid fa-wand-magic-sparkles mr-2" style={{ color: 'var(--amber-primary)' }}></i>
-                    Resumir Versículos Específicos
-                  </h3>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1">
-                      <label className="text-xs mb-1 block" style={{ color: 'var(--text-muted)' }}>De:</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max={chapterData?.verses.length ?? 1}
-                        value={verseStartInput}
-                        onChange={(e) => setVerseStartInput(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-amber-500"
-                        style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-xs mb-1 block" style={{ color: 'var(--text-muted)' }}>Até:</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max={chapterData?.verses.length ?? 1}
-                        value={verseEndInput}
-                        onChange={(e) => setVerseEndInput(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-amber-500"
-                        style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-                    {chapterData ? `Este capítulo tem ${chapterData.verses.length} versículos` : 'Carregando...'}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowVerseSelector(false)}
-                      className="flex-1 px-4 py-2 rounded-full text-xs font-bold transition-colors"
-                      style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-secondary)' }}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={handleSummarizeWithRange}
-                      disabled={isSummaryLoading}
-                      className="flex-1 px-4 py-2 rounded-full text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{ backgroundColor: 'var(--amber-primary)' }}
-                    >
-                      <i className="fa-solid fa-sparkles mr-1"></i>
-                      Resumir
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Summarize Full Chapter Button */}
@@ -354,6 +294,99 @@ const App: React.FC = () => {
             </button>
           </div>
         </header>
+
+        {/* Verse Range Modal - Shown as overlay on all screen sizes */}
+        {showVerseSelector && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              onClick={() => setShowVerseSelector(false)}
+            />
+            {/* Modal */}
+            <div
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-sm p-5 rounded-2xl shadow-2xl border z-50"
+              style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <i className="fa-solid fa-wand-magic-sparkles" style={{ color: 'var(--amber-primary)' }}></i>
+                  Resumir Versículos
+                </h3>
+                <button
+                  onClick={() => setShowVerseSelector(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                  style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-muted)' }}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Selecione o intervalo de versículos que deseja resumir:
+              </p>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1">
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Versículo inicial</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={chapterData?.verses.length ?? 1}
+                    value={verseStartInput}
+                    onChange={(e) => setVerseStartInput(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border text-base outline-none focus:ring-2 focus:ring-amber-500"
+                    style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                    placeholder="1"
+                  />
+                </div>
+                <span className="text-xl font-bold pt-6" style={{ color: 'var(--text-muted)' }}>—</span>
+                <div className="flex-1">
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Versículo final</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={chapterData?.verses.length ?? 1}
+                    value={verseEndInput}
+                    onChange={(e) => setVerseEndInput(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border text-base outline-none focus:ring-2 focus:ring-amber-500"
+                    style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                    placeholder={chapterData?.verses.length?.toString() ?? ''}
+                  />
+                </div>
+              </div>
+
+              <div
+                className="text-xs py-2 px-3 rounded-lg mb-4 text-center"
+                style={{ backgroundColor: 'var(--amber-light)', color: 'var(--amber-accent)' }}
+              >
+                <i className="fa-solid fa-info-circle mr-1"></i>
+                {chapterData
+                  ? `${selectedBook.name} ${selectedChapter} tem ${chapterData.verses.length} versículos`
+                  : 'Carregando capítulo...'}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowVerseSelector(false)}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                  style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-secondary)' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSummarizeWithRange}
+                  disabled={isSummaryLoading}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ backgroundColor: 'var(--amber-primary)' }}
+                >
+                  <i className="fa-solid fa-sparkles"></i>
+                  Resumir
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         <div ref={contentRef} className="flex-1 overflow-y-auto custom-scrollbar">
           {searchResults ? (
