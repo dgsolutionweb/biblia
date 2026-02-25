@@ -30,3 +30,18 @@ export interface SummaryResult {
   keyPoints: string[];
   historicalContext: string;
 }
+
+export interface GuidanceVerse {
+  reference: string;
+  reason: string;
+  practicalApplication: string;
+  verseText: string;
+}
+
+export interface GuidanceResult {
+  title: string;
+  encouragement: string;
+  prayer: string;
+  nextStep: string;
+  verses: GuidanceVerse[];
+}

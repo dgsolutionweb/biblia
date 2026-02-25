@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import SummaryPanel from './components/SummaryPanel';
-import { BookInfo, BibleResponse, SummaryResult } from './types';
+import { BookInfo, BibleResponse, GuidanceResult, SummaryResult } from './types';
 import { fetchChapter } from './services/bibleService';
-import { summarizePassage, searchBibleAI } from './services/geminiService';
+import { getLifeGuidanceAI, summarizePassage, searchBibleAI } from './services/geminiService';
 import { BIBLE_BOOKS } from './constants';
 
 const normalizeText = (value: string) =>
@@ -43,6 +43,11 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ reference: string, reason: string }[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [lifeContext, setLifeContext] = useState('');
+  const [guidanceResult, setGuidanceResult] = useState<GuidanceResult | null>(null);
+  const [isGuidanceLoading, setIsGuidanceLoading] = useState(false);
+  const [guidanceError, setGuidanceError] = useState<string | null>(null);
+  const [showGuidanceModal, setShowGuidanceModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Dark mode state
@@ -122,6 +127,23 @@ const App: React.FC = () => {
       console.error(err);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleLifeGuidance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lifeContext.trim()) return;
+
+    setGuidanceError(null);
+    setIsGuidanceLoading(true);
+    try {
+      const guidance = await getLifeGuidanceAI(lifeContext.trim());
+      setGuidanceResult(guidance);
+    } catch (err) {
+      console.error(err);
+      setGuidanceError('Não consegui gerar orientação agora. Tente novamente em alguns segundos.');
+    } finally {
+      setIsGuidanceLoading(false);
     }
   };
 
@@ -279,6 +301,19 @@ const App: React.FC = () => {
             </div>
 
             {/* Summarize Full Chapter Button */}
+            <button
+              onClick={() => setShowGuidanceModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all active:scale-95"
+              style={{
+                backgroundColor: 'var(--input-bg)',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <i className="fa-solid fa-hands-praying"></i>
+              <span className="hidden sm:inline">Orientação</span>
+              <span className="sm:hidden">Orar</span>
+            </button>
+
             <button
               onClick={() => handleSummarize()}
               disabled={isLoading || isSummaryLoading}
@@ -534,6 +569,140 @@ const App: React.FC = () => {
           )}
         </div>
       </main>
+
+      {showGuidanceModal && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            onClick={() => setShowGuidanceModal(false)}
+          />
+          <div
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] border rounded-3xl shadow-2xl z-50 flex flex-col"
+            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+          >
+            <div
+              className="p-5 border-b flex items-center justify-between"
+              style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--input-bg)' }}
+            >
+              <h2 className="text-lg sm:text-xl font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <i className="fa-solid fa-hands-praying" style={{ color: 'var(--amber-primary)' }}></i>
+                Orientação para Meu Momento
+              </h2>
+              <button
+                onClick={() => setShowGuidanceModal(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: 'var(--card-bg)', color: 'var(--text-muted)' }}
+                aria-label="Fechar orientação"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar">
+              <form onSubmit={handleLifeGuidance} className="space-y-3">
+                <textarea
+                  placeholder="Descreva como você está hoje, o que está passando ou qual dificuldade deseja levar para Deus."
+                  value={lifeContext}
+                  onChange={(e) => setLifeContext(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:ring-2 focus:ring-amber-500 resize-y"
+                  style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    A IA vai sugerir versículos e direção prática para sua situação.
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={isGuidanceLoading || !lifeContext.trim()}
+                    className="px-5 py-2.5 rounded-full text-xs font-bold transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    style={{ backgroundColor: 'var(--amber-primary)', color: '#ffffff' }}
+                  >
+                    {isGuidanceLoading ? (
+                      <>
+                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Buscando...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-sparkles"></i>
+                        Buscar Orientação
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {guidanceError && (
+                <p className="mt-3 text-sm" style={{ color: '#dc2626' }}>
+                  {guidanceError}
+                </p>
+              )}
+
+              {guidanceResult && (
+                <div className="mt-6 space-y-4 animate-fade-in">
+                  <div
+                    className="rounded-2xl border p-4"
+                    style={{ backgroundColor: 'var(--amber-light)', borderColor: 'var(--border-color)' }}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <h3 className="font-black text-base" style={{ color: 'var(--amber-accent)' }}>
+                        {guidanceResult.title}
+                      </h3>
+                      <button
+                        onClick={() => setGuidanceResult(null)}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
+                        style={{ backgroundColor: 'var(--card-bg)', color: 'var(--text-secondary)' }}
+                      >
+                        Limpar
+                      </button>
+                    </div>
+                    <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>
+                      {guidanceResult.encouragement}
+                    </p>
+                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                      Próximo passo: {guidanceResult.nextStep}
+                    </p>
+                    <p className="text-xs italic leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                      Oração sugerida: {guidanceResult.prayer}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {guidanceResult.verses.map((verse, idx) => (
+                      <button
+                        key={`${verse.reference}-${idx}`}
+                        onClick={() => {
+                          navigateToReference(verse.reference);
+                          setShowGuidanceModal(false);
+                        }}
+                        className="w-full text-left p-4 border rounded-2xl transition-all hover:shadow-md group"
+                        style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+                      >
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <span className="font-black text-sm" style={{ color: 'var(--amber-primary)' }}>
+                            {verse.reference}
+                          </span>
+                          <i className="fa-solid fa-arrow-up-right-from-square text-xs" style={{ color: 'var(--text-muted)' }}></i>
+                        </div>
+                        <p className="text-sm italic leading-relaxed whitespace-pre-line mb-2" style={{ color: 'var(--text-secondary)' }}>
+                          "{verse.verseText}"
+                        </p>
+                        <p className="text-sm leading-relaxed mb-1" style={{ color: 'var(--text-primary)' }}>
+                          {verse.reason}
+                        </p>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                          Aplicação prática: {verse.practicalApplication}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       <SummaryPanel
         summary={summary}

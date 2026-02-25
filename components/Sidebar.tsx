@@ -23,7 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelect, selectedBook, selectedChapt
   const filterList = (list: BookInfo[]) =>
     list.filter(book => book.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const BookItem = ({ book }: { book: BookInfo }) => (
+  const BookItem: React.FC<{ book: BookInfo }> = ({ book }) => (
     <div className="group">
       <button
         onClick={() => setExpandedBook(expandedBook === book.id ? null : book.id)}
